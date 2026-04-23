@@ -6,22 +6,23 @@
 <title>和你聊天 ❤️ 模拟器</title>
 <style>
 body { font-family: Arial; margin:0; background:#ece5dd; }
-.chat-container { max-width:400px; margin:0 auto; height:100vh; display:flex; flex-direction:column; background:#fff; border:1px solid #ccc; }
+.chat-container { max-width:400px; margin:0 auto; height:70vh; display:flex; flex-direction:column; background:#fff; border:1px solid #ccc; }
 .chat-header { padding:10px; background:#07c160; color:#fff; text-align:center; font-weight:bold; }
 .chat-messages { flex:1; padding:10px; overflow-y:auto; background:#f0f0f0; }
 .message { margin:10px 0; max-width:70%; padding:8px 12px; border-radius:20px; clear:both; word-wrap:break-word; }
-.sent { background:#07c160; color:#fff; margin-left:auto; }
-.received { background:#fff; border:1px solid #ccc; margin-right:auto; }
+.sent { background:#fff; border:1px solid #ccc; margin-right:auto; } /* 左边自动回复 */
+.received { background:#07c160; color:#fff; margin-left:auto; } /* 右边用户输入 */
 .name { font-weight:bold; font-size:12px; display:block; margin-bottom:2px; }
 .chat-input { display:flex; border-top:1px solid #ccc; }
 .chat-input input { flex:1; padding:10px; border:none; outline:none; font-size:16px; }
 .chat-input button { padding:10px; background:#07c160; color:#fff; border:none; cursor:pointer; }
+.qr-container { text-align:center; padding:10px; background:#fff; border:1px solid #ccc; margin-top:10px; }
 </style>
 </head>
 <body>
 
 <div class="chat-container">
-  <div class="chat-header">Joan ❤️</div>
+  <div class="chat-header">老公 ❤️</div>
   <div class="chat-messages" id="chatMessages"></div>
   <div class="chat-input">
     <input type="text" id="messageInput" placeholder="说点什么...">
@@ -29,10 +30,16 @@ body { font-family: Arial; margin:0; background:#ece5dd; }
   </div>
 </div>
 
+<div class="qr-container">
+  <p>扫码打开网页互动：</p>
+  <canvas id="qrCode"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
 const chatMessages = document.getElementById('chatMessages');
 
-// 自动回复内容（全部甜蜜情话）
+// 自动回复内容（甜蜜话）
 const replies = [
   "老公爱你 ❤️",
   "宝贝我想你 💕",
@@ -40,7 +47,14 @@ const replies = [
   "宝贝今天过得好吗？",
   "抱抱你 🤗",
   "我永远在你身边 ❤️",
-  "想你想到心都甜了 😍"
+  "想你想到心都甜了 😍",
+  "你笑起来真好看 😊",
+  "我一直在想你呢 💕",
+  "宝贝辛苦了，休息一下吧 💤",
+  "想和你手牵手走一辈子 ❤️",
+  "你吃饭了吗？要照顾好自己 🍚",
+  "每次想到你，心里都暖暖的 🥰",
+  "我最喜欢和你聊天了 😘"
 ];
 let replyIndex = 0;
 
@@ -54,11 +68,11 @@ function addMessage(text, type, name='') {
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// 自动回复函数
+// 自动回复
 function autoReply() {
   const reply = replies[replyIndex % replies.length];
   replyIndex++;
-  setTimeout(() => addMessage(reply, 'sent', 'Joan ❤️'), 500);
+  setTimeout(() => addMessage(reply, 'sent', '老公 ❤️'), 500); // 左边自动回复名字
 }
 
 // 用户发送消息
@@ -66,13 +80,20 @@ function sendMessage() {
   const input = document.getElementById('messageInput');
   const text = input.value.trim();
   if(!text) return;
-  addMessage(text, 'received', '她'); // 左边显示她
+  addMessage(text, 'received', '我'); // 右边显示“我”
   input.value = '';
   autoReply();
 }
 
-// 打开网页默认欢迎
-addMessage('你好呀，我的宝贝~ ❤️', 'sent', 'Joan ❤️');
+// 默认欢迎消息
+addMessage('你好呀，我的宝贝~ ❤️', 'sent', '老公 ❤️');
+
+// 生成二维码
+const qrCanvas = document.getElementById('qrCode');
+const pageUrl = window.location.href; 
+QRCode.toCanvas(qrCanvas, pageUrl, function (error) {
+  if (error) console.error(error);
+});
 </script>
 </body>
 </html>
