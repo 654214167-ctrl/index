@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>和你聊天 ❤️ 模拟器</title>
+<style>
+body { font-family: Arial; margin:0; background:#ece5dd; }
+.chat-container { max-width:400px; margin:0 auto; height:100vh; display:flex; flex-direction:column; background:#fff; border:1px solid #ccc; }
+.chat-header { padding:10px; background:#07c160; color:#fff; text-align:center; font-weight:bold; }
+.chat-messages { flex:1; padding:10px; overflow-y:auto; background:#f0f0f0; }
+.message { margin:10px 0; max-width:70%; padding:8px 12px; border-radius:20px; clear:both; word-wrap:break-word; }
+.sent { background:#07c160; color:#fff; margin-left:auto; }
+.received { background:#fff; border:1px solid #ccc; margin-right:auto; }
+.name { font-weight:bold; font-size:12px; display:block; margin-bottom:2px; }
+.chat-input { display:flex; border-top:1px solid #ccc; }
+.chat-input input { flex:1; padding:10px; border:none; outline:none; font-size:16px; }
+.chat-input button { padding:10px; background:#07c160; color:#fff; border:none; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">Joan ❤️</div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input">
+    <input type="text" id="messageInput" placeholder="说点什么...">
+    <button onclick="sendMessage()">发送</button>
+  </div>
+</div>
+
+<script>
+const chatMessages = document.getElementById('chatMessages');
+
+// 自动回复内容（全部甜蜜情话）
+const replies = [
+  "老公爱你 ❤️",
+  "宝贝我想你 💕",
+  "你是我的小心肝 😘",
+  "宝贝今天过得好吗？",
+  "抱抱你 🤗",
+  "我永远在你身边 ❤️",
+  "想你想到心都甜了 😍"
+];
+let replyIndex = 0;
+
+// 显示消息
+function addMessage(text, type, name='') {
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'message ' + type;
+  if(name) msgDiv.innerHTML = `<span class="name">${name}</span>${text}`;
+  else msgDiv.innerText = text;
+  chatMessages.appendChild(msgDiv);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+// 自动回复函数
+function autoReply() {
+  const reply = replies[replyIndex % replies.length];
+  replyIndex++;
+  setTimeout(() => addMessage(reply, 'sent', 'Joan ❤️'), 500);
+}
+
+// 用户发送消息
+function sendMessage() {
+  const input = document.getElementById('messageInput');
+  const text = input.value.trim();
+  if(!text) return;
+  addMessage(text, 'received', '她'); // 左边显示她
+  input.value = '';
+  autoReply();
+}
+
+// 打开网页默认欢迎
+addMessage('你好呀，我的宝贝~ ❤️', 'sent', 'Joan ❤️');
+</script>
+</body>
+</html>
