@@ -3,97 +3,143 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>和你聊天 ❤️ 模拟器</title>
+<title>宝贝爱心冒险 Ultimate 💖</title>
 <style>
-body { font-family: Arial; margin:0; background:#ece5dd; }
-.chat-container { max-width:400px; margin:0 auto; height:70vh; display:flex; flex-direction:column; background:#fff; border:1px solid #ccc; }
-.chat-header { padding:10px; background:#07c160; color:#fff; text-align:center; font-weight:bold; }
-.chat-messages { flex:1; padding:10px; overflow-y:auto; background:#f0f0f0; }
-.message { margin:10px 0; max-width:70%; padding:8px 12px; border-radius:20px; clear:both; word-wrap:break-word; }
-.sent { background:#fff; border:1px solid #ccc; margin-right:auto; } /* 左边自动回复 */
-.received { background:#07c160; color:#fff; margin-left:auto; } /* 右边用户输入 */
-.name { font-weight:bold; font-size:12px; display:block; margin-bottom:2px; }
-.chat-input { display:flex; border-top:1px solid #ccc; }
-.chat-input input { flex:1; padding:10px; border:none; outline:none; font-size:16px; }
-.chat-input button { padding:10px; background:#07c160; color:#fff; border:none; cursor:pointer; }
-.qr-container { text-align:center; padding:10px; background:#fff; border:1px solid #ccc; margin-top:10px; }
+body {
+  margin:0; padding:0;
+  font-family: Arial, sans-serif;
+  overflow:hidden;
+  background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
+  background-size: 400% 400%;
+  animation: gradientBG 15s ease infinite;
+}
+
+@keyframes gradientBG {
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+#game-container { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
+.heart {
+  position: absolute;
+  width: 50px; height:50px;
+  border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  color:white; font-weight:bold; font-size:18px;
+  cursor:pointer; user-select:none;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+.red { background: #e91e63; }
+.gold { background: #ffd700; color:#000; }
+.blue { background: #2196f3; }
+
+#score-board, #time-board {
+  position: fixed; top:10px; padding:10px 15px;
+  border-radius:10px; font-size:18px; font-weight:bold;
+  color:white; background: rgba(0,0,0,0.4);
+}
+#score-board { left:10px; }
+#time-board { right:10px; }
+
+#message {
+  position: fixed; bottom:20px; width:100%; text-align:center;
+  font-size:20px; color:#fff; font-weight:bold; text-shadow:1px 1px 2px #000;
+}
+
+#start-btn {
+  position: absolute; top:50%; left:50%; transform:translate(-50%, -50%);
+  padding:15px 25px; font-size:22px; background:#e91e63; color:white;
+  border:none; border-radius:10px; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.3);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%{ transform: translate(-50%, -50%) scale(1);}
+  50%{ transform: translate(-50%, -50%) scale(1.1);}
+  100%{ transform: translate(-50%, -50%) scale(1);}
+}
 </style>
 </head>
 <body>
 
-<div class="chat-container">
-  <div class="chat-header">老公 ❤️</div>
-  <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input">
-    <input type="text" id="messageInput" placeholder="说点什么...">
-    <button onclick="sendMessage()">发送</button>
-  </div>
+<div id="game-container">
+  <button id="start-btn">开始游戏 💖</button>
+  <div id="score-board">分数: 0</div>
+  <div id="time-board">时间: 30</div>
+  <div id="message"></div>
 </div>
 
-<div class="qr-container">
-  <p>扫码打开网页互动：</p>
-  <canvas id="qrCode"></canvas>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 <script>
-const chatMessages = document.getElementById('chatMessages');
+const container = document.getElementById('game-container');
+const scoreBoard = document.getElementById('score-board');
+const timeBoard = document.getElementById('time-board');
+const messageEl = document.getElementById('message');
+const startBtn = document.getElementById('start-btn');
 
-// 自动回复内容（甜蜜话）
-const replies = [
-  "老公爱你 ❤️",
-  "宝贝我想你 💕",
-  "你是我的小心肝 😘",
-  "宝贝今天过得好吗？",
-  "抱抱你 🤗",
-  "我永远在你身边 ❤️",
-  "想你想到心都甜了 😍",
-  "你笑起来真好看 😊",
-  "我一直在想你呢 💕",
-  "宝贝辛苦了，休息一下吧 💤",
-  "想和你手牵手走一辈子 ❤️",
-  "你吃饭了吗？要照顾好自己 🍚",
-  "每次想到你，心里都暖暖的 🥰",
-  "我最喜欢和你聊天了 😘"
+let score = 0, time = 30, gameInterval, heartInterval;
+const messages = [
+  "老公爱你 ❤️","宝贝我想你 💕","你是我的小心肝 😘",
+  "抱抱你 🤗","我永远在你身边 ❤️","想你想到心都甜了 😍",
+  "你笑起来真好看 😊","我最喜欢和你聊天了 😘",
+  "你是我的全世界 💖","想牵着你手走一辈子 ❤️"
 ];
-let replyIndex = 0;
 
-// 显示消息
-function addMessage(text, type, name='') {
-  const msgDiv = document.createElement('div');
-  msgDiv.className = 'message ' + type;
-  if(name) msgDiv.innerHTML = `<span class="name">${name}</span>${text}`;
-  else msgDiv.innerText = text;
-  chatMessages.appendChild(msgDiv);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+function randomPosition() {
+  return { x: Math.random()*(window.innerWidth-60), y: Math.random()*(window.innerHeight-60) };
 }
 
-// 自动回复
-function autoReply() {
-  const reply = replies[replyIndex % replies.length];
-  replyIndex++;
-  setTimeout(() => addMessage(reply, 'sent', '老公 ❤️'), 500); // 左边自动回复名字
+function createHeart() {
+  const heart = document.createElement('div');
+  heart.classList.add('heart');
+  const r = Math.random();
+  if(r<0.6) heart.classList.add('red');
+  else if(r<0.85) heart.classList.add('gold');
+  else heart.classList.add('blue');
+  heart.innerText='❤️';
+  const pos = randomPosition();
+  heart.style.left = pos.x + 'px';
+  heart.style.top = pos.y + 'px';
+  container.appendChild(heart);
+
+  heart.onclick = () => {
+    let points = heart.classList.contains('gold')?2: heart.classList.contains('blue')?3:1;
+    score+=points;
+    scoreBoard.innerText = `分数: ${score}`;
+
+    // 飞起来动画
+    heart.style.transition='all 0.7s ease';
+    heart.style.transform='translateY(-100px) scale(1.5) rotate(360deg)';
+    heart.style.opacity='0';
+    setTimeout(()=> container.removeChild(heart),700);
+
+    const msg = messages[Math.floor(Math.random()*messages.length)];
+    messageEl.innerText=msg;
+  }
+
+  // 自动消失
+  setTimeout(()=>{ if(container.contains(heart)) container.removeChild(heart); }, 2500);
 }
 
-// 用户发送消息
-function sendMessage() {
-  const input = document.getElementById('messageInput');
-  const text = input.value.trim();
-  if(!text) return;
-  addMessage(text, 'received', '我'); // 右边显示“我”
-  input.value = '';
-  autoReply();
+function startGame(){
+  startBtn.style.display='none';
+  score=0; time=30;
+  scoreBoard.innerText='分数: 0'; timeBoard.innerText='时间: 30'; messageEl.innerText='';
+
+  heartInterval=setInterval(createHeart,500);
+  gameInterval=setInterval(()=>{
+    time--;
+    timeBoard.innerText=`时间: ${time}`;
+    if(time<=0){
+      clearInterval(gameInterval); clearInterval(heartInterval);
+      const endMsgs=["你是我的唯一 ❤️","爱你到天荒地老 💕","今天你打了很多爱心 😘"];
+      alert(`游戏结束！总分: ${score}\n${endMsgs[Math.floor(Math.random()*endMsgs.length)]}`);
+      startBtn.style.display='block';
+    }
+  },1000);
 }
 
-// 默认欢迎消息
-addMessage('你好呀，我的宝贝~ ❤️', 'sent', '老公 ❤️');
-
-// 生成二维码
-const qrCanvas = document.getElementById('qrCode');
-const pageUrl = window.location.href; 
-QRCode.toCanvas(qrCanvas, pageUrl, function (error) {
-  if (error) console.error(error);
-});
+startBtn.onclick=startGame;
 </script>
 </body>
 </html>
