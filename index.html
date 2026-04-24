@@ -3,140 +3,169 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>宝贝爱心冒险 Ultimate 💖</title>
+<title>甜蜜连连看 💖</title>
 <style>
 body {
-  margin:0; padding:0;
+  margin: 0; padding: 0;
   font-family: Arial, sans-serif;
-  overflow:hidden;
-  background: linear-gradient(-45deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
+  background: linear-gradient(135deg, #ff9a9e, #fad0c4, #a1c4fd, #c2e9fb);
   background-size: 400% 400%;
   animation: gradientBG 15s ease infinite;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100vh;
+  overflow: hidden;
 }
-
 @keyframes gradientBG {
   0%{background-position:0% 50%;}
   50%{background-position:100% 50%;}
   100%{background-position:0% 50%;}
 }
-
-#game-container { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
-.heart {
-  position: absolute;
-  width: 50px; height:50px;
-  border-radius:50%;
+#game-container {
+  display: grid;
+  grid-template-columns: repeat(6, 60px);
+  grid-gap: 10px;
+}
+.cell {
+  width: 60px; height:60px;
+  background: #fff; border-radius: 10px;
   display:flex; align-items:center; justify-content:center;
-  color:white; font-weight:bold; font-size:18px;
-  cursor:pointer; user-select:none;
-  transition: transform 0.5s ease, opacity 0.5s ease;
+  font-size:28px; cursor:pointer; box-shadow:0 4px 8px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease;
 }
-.red { background: #e91e63; }
-.gold { background: #ffd700; color:#000; }
-.blue { background: #2196f3; }
-
-#score-board, #time-board {
-  position: fixed; top:10px; padding:10px 15px;
-  border-radius:10px; font-size:18px; font-weight:bold;
-  color:white; background: rgba(0,0,0,0.4);
+.cell.matched {
+  transform: scale(0);
+  transition: transform 0.3s ease;
 }
-#score-board { left:10px; }
-#time-board { right:10px; }
-
+#score-board {
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000;
+}
 #message {
-  position: fixed; bottom:20px; width:100%; text-align:center;
-  font-size:20px; color:#fff; font-weight:bold; text-shadow:1px 1px 2px #000;
+  margin-top: 10px;
+  font-size: 18px;
+  color: #fff;
+  text-align: center;
+  height: 24px;
 }
-
 #start-btn {
-  position: absolute; top:50%; left:50%; transform:translate(-50%, -50%);
-  padding:15px 25px; font-size:22px; background:#e91e63; color:white;
-  border:none; border-radius:10px; cursor:pointer; box-shadow:0 5px 15px rgba(0,0,0,0.3);
+  padding: 10px 20px; font-size: 20px; background: #e91e63; color:#fff;
+  border:none; border-radius:10px; cursor:pointer; margin-bottom:20px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
   animation: pulse 1.5s infinite;
 }
-
 @keyframes pulse {
-  0%{ transform: translate(-50%, -50%) scale(1);}
-  50%{ transform: translate(-50%, -50%) scale(1.1);}
-  100%{ transform: translate(-50%, -50%) scale(1);}
+  0%{ transform: scale(1);}
+  50%{ transform: scale(1.1);}
+  100%{ transform: scale(1);}
 }
 </style>
 </head>
 <body>
 
-<div id="game-container">
-  <button id="start-btn">开始游戏 💖</button>
-  <div id="score-board">分数: 0</div>
-  <div id="time-board">时间: 30</div>
-  <div id="message"></div>
-</div>
+<button id="start-btn">开始游戏 💖</button>
+<div id="game-container"></div>
+<div id="score-board">分数: 0</div>
+<div id="message"></div>
 
 <script>
 const container = document.getElementById('game-container');
 const scoreBoard = document.getElementById('score-board');
-const timeBoard = document.getElementById('time-board');
 const messageEl = document.getElementById('message');
 const startBtn = document.getElementById('start-btn');
 
-let score = 0, time = 30, gameInterval, heartInterval;
-const messages = [
-  "老公爱你 ❤️","宝贝我想你 💕","你是我的小心肝 😘",
-  "抱抱你 🤗","我永远在你身边 ❤️","想你想到心都甜了 😍",
-  "你笑起来真好看 😊","我最喜欢和你聊天了 😘",
-  "你是我的全世界 💖","想牵着你手走一辈子 ❤️"
+// 扩充 emojis 数组，至少 18 个不同表情
+const emojis = ['❤️','💖','💘','💝','💗','💞','💌','💟','💕','💓','😘','😍','🥰','💛','🧡','💚','💜','🖤','💙'];
+const sweetMessages = [
+  "宝贝，你是我世界里最亮的星 ✨","每次想到你，心都甜到融化了 🍬",
+  "今天想你了吗？我一直在想 💕","你笑起来好治愈 😘","抱抱你，让你安心 🥰",
+  "想和你一起旅行到全世界 🌏","你是我的小幸运 🍀","再忙也要想着我 ❤️",
+  "爱你从心动到永远 💖","你在我心里是唯一 💌","想每天和你一起醒来 🌞",
+  "你是我心中最温暖的存在 🥰","你笑的样子太迷人了 😍","你让我每天都开心 💕",
+  "有你在身边，生活都是甜的 🍫","我喜欢和你说话 😘","你是我永远的宝贝 ❤️",
+  "想给你买好多好多礼物 🎁","每晚都想和你说晚安 🌙","你是我世界里的彩虹 🌈",
+  "你的一笑胜过千言万语 😊","爱你如初，越久越甜 💖","宝贝你真可爱 😍",
+  "想天天抱着你 🥰","你是我唯一的小幸运 🍀","你是我最想念的人 💕",
+  "你是我的小甜心 ❤️","你让我心跳加速 💓","你是我的甜蜜源泉 🥰",
+  "你笑起来像阳光一样温暖 ☀️","你是我世界里的彩虹 🌈","每次想你就想抱你 🤗"
 ];
 
-function randomPosition() {
-  return { x: Math.random()*(window.innerWidth-60), y: Math.random()*(window.innerHeight-60) };
-}
+let grid = [];
+let firstCell = null;
+let secondCell = null;
+let score = 0;
+let canClick = false;
 
-function createHeart() {
-  const heart = document.createElement('div');
-  heart.classList.add('heart');
-  const r = Math.random();
-  if(r<0.6) heart.classList.add('red');
-  else if(r<0.85) heart.classList.add('gold');
-  else heart.classList.add('blue');
-  heart.innerText='❤️';
-  const pos = randomPosition();
-  heart.style.left = pos.x + 'px';
-  heart.style.top = pos.y + 'px';
-  container.appendChild(heart);
-
-  heart.onclick = () => {
-    let points = heart.classList.contains('gold')?2: heart.classList.contains('blue')?3:1;
-    score+=points;
-    scoreBoard.innerText = `分数: ${score}`;
-
-    // 飞起来动画
-    heart.style.transition='all 0.7s ease';
-    heart.style.transform='translateY(-100px) scale(1.5) rotate(360deg)';
-    heart.style.opacity='0';
-    setTimeout(()=> container.removeChild(heart),700);
-
-    const msg = messages[Math.floor(Math.random()*messages.length)];
-    messageEl.innerText=msg;
+function shuffle(array){
+  for(let i=array.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
-
-  // 自动消失
-  setTimeout(()=>{ if(container.contains(heart)) container.removeChild(heart); }, 2500);
+  return array;
 }
 
 function startGame(){
   startBtn.style.display='none';
-  score=0; time=30;
-  scoreBoard.innerText='分数: 0'; timeBoard.innerText='时间: 30'; messageEl.innerText='';
+  container.innerHTML='';
+  grid=[];
+  score=0;
+  scoreBoard.innerText='分数: 0';
+  messageEl.innerText='';
+  canClick=true;
 
-  heartInterval=setInterval(createHeart,500);
-  gameInterval=setInterval(()=>{
-    time--;
-    timeBoard.innerText=`时间: ${time}`;
-    if(time<=0){
-      clearInterval(gameInterval); clearInterval(heartInterval);
-      const endMsgs=["你是我的唯一 ❤️","爱你到天荒地老 💕","今天你打了很多爱心 😘"];
-      alert(`游戏结束！总分: ${score}\n${endMsgs[Math.floor(Math.random()*endMsgs.length)]}`);
-      startBtn.style.display='block';
-    }
-  },1000);
+  // 确保每次都有 18 对（36 个格子）
+  let pairs = emojis.slice(0,18); 
+  let cells = pairs.concat(pairs); // 两份
+  shuffle(cells);
+
+  for(let i=0;i<36;i++){
+    const cell = document.createElement('div');
+    cell.classList.add('cell');
+    cell.dataset.value = cells[i];
+    cell.innerText = cells[i];
+    cell.onclick = ()=> clickCell(cell);
+    container.appendChild(cell);
+    grid.push(cell);
+  }
+}
+
+function clickCell(cell){
+  if(!canClick || cell.classList.contains('matched') || cell===firstCell) return;
+  cell.style.transform='scale(1.2)';
+  setTimeout(()=> cell.style.transform='scale(1)',200);
+
+  if(!firstCell){
+    firstCell=cell;
+    return;
+  }
+  secondCell=cell;
+  canClick=false;
+
+  if(firstCell.dataset.value===secondCell.dataset.value){
+    // 匹配成功
+    setTimeout(()=>{
+      firstCell.classList.add('matched');
+      secondCell.classList.add('matched');
+      firstCell.style.visibility='hidden';
+      secondCell.style.visibility='hidden';
+      score+=10;
+      scoreBoard.innerText='分数: '+score;
+      const msg = sweetMessages[Math.floor(Math.random()*sweetMessages.length)];
+      messageEl.innerText=msg;
+      firstCell=null;
+      secondCell=null;
+      canClick=true;
+    },300);
+  } else {
+    // 不匹配
+    setTimeout(()=>{
+      firstCell=null;
+      secondCell=null;
+      canClick=true;
+    },500);
+  }
 }
 
 startBtn.onclick=startGame;
